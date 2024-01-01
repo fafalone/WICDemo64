@@ -1,0 +1,212 @@
+[ FormDesignerId ("C2893942-4051-43F8-AEF5-064287A5CCF8") ]
+[ ClassId ("51032FBB-82BF-4A36-8A8C-06FB20D781DA") ]
+[ InterfaceId ("EA124269-0413-41E9-A6F9-23CF0FF357DD") ]
+[ EventInterfaceId ("762F0DA8-6249-4977-860C-7B05D4471955") ]
+Class Form1
+    Attribute VB_Name = "Form1"
+    Attribute VB_GlobalNameSpace = False
+    Attribute VB_Creatable = False
+    Attribute VB_PredeclaredId = True
+    Attribute VB_Exposed = False
+    Option Explicit
+    Private cWI As cWICImage
+    Private mFile As String
+    Private fsd As FileSaveDialog
+    Private fdc As IFileDialogCustomize
+    Private WithEvents cEvents As cFileDlgEvents
+    Attribute cEvents.VB_VarHelpID = -1
+    Private dwCk As Long
+    Private strImgQ As String
+    Private bAuto As Boolean
+    
+    ' Private Declare Function SysReAllocString Lib "oleaut32.dll" (ByVal pBSTR As Long, Optional ByVal pszStrPtr As Long) As Long
+    
+    ' Private Function LPWSTRtoSTR(lpWStr As Long, Optional ByVal CleanupLPWStr As Boolean = True) As String
+    ' SysReAllocString VarPtr(LPWSTRtoSTR), lpWStr
+    ' If CleanupLPWStr Then CoTaskMemFree lpWStr
+    ' End Function
+    
+    Private Sub cEvents_OnOk()
+    Dim lp As LongPtr, sz As Long
+    fdc.GetEditBoxText 3000, lp
+    sz = LPWSTRtoStr(lp)
+    strImgQ = sz
+    
+    End Sub
+    
+    Private Sub cEvents_TypeChange(nIdx As Long)
+    Debug.Print "TypeChange " & nIdx
+    If (nIdx = 2) Or (nIdx = 3) Then
+        fdc.SetControlState 2000, CDCS_INACTIVE
+        fdc.SetControlState 3000, CDCS_INACTIVE
+    ElseIf nIdx = 1 Then
+        fdc.SetControlState 2000, CDCS_VISIBLE Or CDCS_ENABLED
+        fdc.SetControlState 3000, CDCS_VISIBLE Or CDCS_ENABLED
+    End If
+    End Sub
+    
+    Private Sub Check2_Click()
+    If Check2.Value = vbChecked Then
+        Text4.Enabled = False
+        Text5.Enabled = False
+    Else
+        Text4.Enabled = True
+        Text5.Enabled = False
+    End If
+    End Sub
+    
+    Private Sub Command1_Click()
+    Dim fod As FileOpenDialog
+    Set fod = New FileOpenDialog
+    
+    Dim FileFilter() As COMDLG_FILTERSPEC
+    ReDim FileFilter(1)
+    
+    FileFilter(0).pszName = StrPtr("Supported Image Files")
+    FileFilter(0).pszSpec = StrPtr("*.jpg;*.png;*.ico;*.gif;*.bmp;*.tiff;*.raw;*.webp")
+    
+    FileFilter(1).pszName = StrPtr("All Files")
+    FileFilter(1).pszSpec = StrPtr("*.*")
+    
+    fod.SetTitle "Choose an image..."
+    fod.SetFileTypes 2, VarPtr(FileFilter(0).pszName)
+    On Error Resume Next
+    fod.Show Me.hWnd
+    
+    Dim siRes As IShellItem
+    
+    fod.GetResult siRes
+    If (siRes Is Nothing) = False Then
+        Dim lpFile As LongPtr
+        siRes.GetDisplayName SIGDN_FILESYSPATH, lpFile
+        mFile = LPWSTRtoStr(lpFile)
+        Text1.Text = mFile
+    End If
+    
+    
+    End Sub
+    
+    Private Sub Command2_Click()
+    Set cWI = New cWICImage
+    
+    Dim x As Long, y As Long
+    
+    If Check2.Value = vbChecked Then
+        x = -1
+    Else
+        x = CLng(Text4.Text)
+        y = CLng(Text5.Text)
+    End If
+        
+    Picture1.Cls
+    
+    cWI.OpenFile mFile, Picture1.hDC, x, y, , Picture1.hWnd
+    
+    Label1.Caption = "Dimensions: " & cWI.ImageWidth & "x" & cWI.ImageHeight & " (" & Round(cWI.ImageWidth / cWI.ImageHeight, 2) & ":1)"
+    Label2.Caption = "Frame count: " & cWI.FrameCount
+    
+    
+    Picture1.Refresh
+    'Debug.Print "PictureBox(sw=" & Picture1.ScaleWidth & ") reports cx=" & (Picture1.Picture.Width / (1.5)) / Screen.TwipsPerPixelX
+    End Sub
+    
+    Private Sub Command4_Click()
+    If (cWI Is Nothing) Then Exit Sub
+    Dim cx As Long, cy As Long
+    cx = CLng(Text2.Text)
+    cy = CLng(Text3.Text)
+    Dim x As Long, y As Long
+    
+    If Check2.Value = vbChecked Then
+        x = -1
+    Else
+        x = CLng(Text4.Text)
+        y = CLng(Text5.Text)
+    End If
+    Picture1.Cls
+    cWI.ScaleImage Picture1.hDC, x, y, cx, cy, Picture1.hWnd
+    Picture1.Refresh
+    End Sub
+    
+    Private Sub Command3_Click()
+    Set fsd = New FileSaveDialog
+    
+    Dim SaveFilter() As COMDLG_FILTERSPEC
+    ReDim SaveFilter(2)
+    SaveFilter(0).pszName = StrPtr("JPEG Image (*.jpg)")
+    SaveFilter(0).pszSpec = StrPtr("*.jpg")
+    SaveFilter(1).pszName = StrPtr("PNG Image (*.png)")
+    SaveFilter(1).pszSpec = StrPtr("*.png")
+    SaveFilter(2).pszName = StrPtr("BMP Image (*.bmp)")
+    SaveFilter(2).pszSpec = StrPtr("*.bmp")
+    
+    fsd.SetTitle "Save image as..."
+    fsd.SetFileTypes UBound(SaveFilter) + 1, VarPtr(SaveFilter(0).pszName)
+    fsd.SetOptions FOS_STRICTFILETYPES
+    Set fdc = fsd
+    
+    fdc.AddText 2000, "Image Quality (Percent)"
+    fdc.AddEditBox 3000, "100"
+     
+    
+    On Error Resume Next
+    Set cEvents = New cFileDlgEvents
+    fsd.Advise cEvents, dwCk
+    fsd.Show Me.hWnd
+    Dim siRes As IShellItem
+    fsd.GetResult siRes
+    If (siRes Is Nothing) = False Then
+        Dim sSave As String, lpSave As LongPtr
+        Dim nFmt As Long
+        siRes.GetDisplayName SIGDN_FILESYSPATH, lpSave
+        sSave = LPWSTRtoStr(lpSave)
+        fsd.GetFileTypeIndex nFmt
+        Debug.Print "Calling save(" & nFmt & ") " & sSave
+        Dim sHR As Long
+        Select Case nFmt
+            Case 1
+                If Right$(sSave, 4) <> ".jpg" Then sSave = sSave & ".jpg"
+                sHR = cWI.SaveJPG(sSave, CSng(strImgQ) / 100)
+            Case 2
+                If Right$(sSave, 4) <> ".png" Then sSave = sSave & ".png"
+                sHR = cWI.SavePNG(sSave)
+            Case 3
+                If Right$(sSave, 4) <> ".bmp" Then sSave = sSave & ".bmp"
+                sHR = cWI.SaveBMP(sSave)
+        End Select
+        If sHR = S_OK Then
+            Label4.Caption = "Saved."
+        Else
+            Label4.Caption = "Error: 0x" & Hex$(sHR)
+        End If
+    Else
+        Debug.Print "No item"
+    End If
+    End Sub
+    
+    Private Sub Text2_Change()
+    If Check1.Value = vbChecked Then
+        If bAuto = False Then
+            Dim ratio As Single
+            ratio = cWI.ImageWidth / cWI.ImageHeight
+            bAuto = True
+            Text3.Text = CLng(Round(CLng(Text2.Text) / ratio, 0))
+            bAuto = False
+        End If
+    End If
+    End Sub
+    
+    Private Sub Text3_Change()
+    If Check1.Value = vbChecked Then
+        If bAuto = False Then
+            Dim ratio As Single
+            ratio = cWI.ImageWidth / cWI.ImageHeight
+            bAuto = True
+            Text2.Text = CLng(Round(CLng(Text3.Text) / ratio, 0))
+            bAuto = False
+        End If
+    End If
+    End Sub
+    
+
+End Class
