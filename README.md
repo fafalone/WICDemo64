@@ -8,7 +8,7 @@ Thought I'd see if my WIC demo worked in tB. Happy to report the initial import 
 
 Attached is the 64bit port, and a zip with the original VB6 project and unmodified tB import.
 
-**Update (03 Mar 2024):** .twinproj has been updated to use a more recent version of WinDevLib (formerly tbShellLib) due to errors in the package tB did not raise at the time this project was released.
+**Update (Version 0.3, 03 Mar 2024):** Added BMP save option; also .twinproj has been updated to use a more recent version of WinDevLib (formerly tbShellLib) due to errors in the package tB did not raise at the time this project was released.
 
 Original project page:
 [[VB6] Intro to the Windows Imaging Component (WIC): Scale and convert JPG to PNG](https://www.vbforums.com/showthread.php?879907) (the attached version adds BMP as a supported save format)
