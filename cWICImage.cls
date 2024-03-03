@@ -13,7 +13,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 '********************************************************************************
-'cWICImage 0.2 (x64 port)
+'cWICImage 0.3 (x64 port)
 'Windows Imaging Component Basic Usage Demo
 '
 'Author: fafalone
@@ -27,6 +27,9 @@ Option Explicit
 '-OpenFile and ScaleImage take x,y parameters, to center the image you can
 ' pass -1 for x. When the functions return, x and y will have the new coords.
 ' You must set the hWnd parameter to use this.
+'
+'Updates:
+'0.3 - Add BMP save option. Update WinDevLib version.
 '
 '********************************************************************************
 
@@ -167,7 +170,7 @@ If (pFact Is Nothing) = False Then
         pDecoder.GetFrameCount nCount
         mFrameCt = nCount
         If mFrame >= nCount Then mFrame = nCount - 1
-        pDecoder.GetFrame mFrame, pFrame
+        Set pFrame = pDecoder.GetFrame(mFrame)
         pDecoder.GetContainerFormat tCF
 
         If IsEqualIID(tCF, GUID_ContainerFormatJpeg) Then mCodec = WFF_JPG
@@ -187,7 +190,7 @@ If (pFact Is Nothing) = False Then
         If (pFrame Is Nothing) = False Then
             pFrame.GetSize mWidth, mHeight
             Debug.Print "OpenFile Read dim as " & mWidth & "x" & mHeight
-            pFact.CreateFormatConverter pConverter
+            Set pConverter = pFact.CreateFormatConverter()
             If pConverter Is Nothing Then
                 Debug.Print "OpenFile:No converter"
                 Exit Function
