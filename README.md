@@ -9,7 +9,7 @@ Thought I'd see if my WIC demo worked in tB. Happy to report the initial import 
 Attached is the 64bit port, and a zip with the original VB6 project and unmodified tB import.
 
 
-**Update (Version 0.4, 06 Apr 2024):** - Bug fixes to work with latest WDL versions (#1). Fix save notification position.
+**Update (Version 0.4, 06 Apr 2024):** - Bug fixes to work with latest WDL versions ([Issue #1](https://github.com/fafalone/WICDemo64/issues/1)). Fix save notification position.
 
 **Update (Version 0.3, 03 Mar 2024):** Added BMP save option; also .twinproj has been updated to use a more recent version of WinDevLib (formerly tbShellLib) due to errors in the package tB did not raise at the time this project was released.
 
